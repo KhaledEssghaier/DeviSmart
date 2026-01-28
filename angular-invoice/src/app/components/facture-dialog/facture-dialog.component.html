@@ -1,0 +1,160 @@
+<h2 mat-dialog-title>
+  <mat-icon>receipt_long</mat-icon>
+  {{ isEditMode ? 'Modifier Facture' : 'Créer Nouvelle Facture' }}
+</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="factureForm" class="facture-form">
+    <!-- Section Client -->
+    <div class="form-section">
+      <h3>
+        <mat-icon>person</mat-icon>
+        Informations Client
+      </h3>
+      
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Nom du client *</mat-label>
+          <input matInput formControlName="nomClient" placeholder="Nom ou raison sociale">
+          <mat-icon matSuffix>person</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row two-cols">
+        <mat-form-field appearance="outline">
+          <mat-label>Téléphone</mat-label>
+          <input matInput formControlName="telephoneClient" placeholder="+216 XX XXX XXX">
+          <mat-icon matSuffix>phone</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Email</mat-label>
+          <input matInput formControlName="emailClient" type="email" placeholder="email@exemple.com">
+          <mat-icon matSuffix>email</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Adresse</mat-label>
+          <textarea matInput formControlName="adresseClient" rows="2" placeholder="Adresse complète"></textarea>
+          <mat-icon matSuffix>location_on</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Matricule Fiscal</mat-label>
+          <input matInput formControlName="matriculeFiscalClient" placeholder="XXXXXXX/X/X/XXX">
+          <mat-icon matSuffix>badge</mat-icon>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <!-- Section Lignes -->
+    <div class="form-section">
+      <div class="section-header">
+        <h3>
+          <mat-icon>list</mat-icon>
+          Lignes de facture
+        </h3>
+        <button mat-mini-fab color="primary" type="button" (click)="ajouterLigne()">
+          <mat-icon>add</mat-icon>
+        </button>
+      </div>
+
+      <div class="lignes-container" formArrayName="lignes">
+        @for (ligne of lignes.controls; track $index) {
+          <div class="ligne-row" [formGroupName]="$index">
+            <mat-form-field appearance="outline" class="designation-field">
+              <mat-label>Désignation</mat-label>
+              <input matInput formControlName="designation" placeholder="Description du produit/service">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="number-field">
+              <mat-label>Quantité</mat-label>
+              <input matInput type="number" formControlName="quantite" step="0.001" min="0">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="number-field">
+              <mat-label>Prix HT</mat-label>
+              <input matInput type="number" formControlName="prixUnitaireHT" step="0.01" min="0">
+              <span matSuffix>TND</span>
+            </mat-form-field>
+
+            <div class="ligne-total">
+              {{ calculerTotalLigne($index) | number:'1.3-3' }} TND
+            </div>
+
+            <button mat-icon-button color="warn" type="button" (click)="supprimerLigne($index)" 
+                    [disabled]="lignes.length === 1">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <!-- Section Paramètres -->
+    <div class="form-section">
+      <h3>
+        <mat-icon>settings</mat-icon>
+        Paramètres
+      </h3>
+
+      <div class="form-row two-cols">
+        <mat-form-field appearance="outline">
+          <mat-label>Taux TVA</mat-label>
+          <mat-select formControlName="tauxTVA">
+            @for (taux of tauxTVAOptions; track taux.value) {
+              <mat-option [value]="taux.value">{{ taux.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Conditions de paiement</mat-label>
+          <input matInput formControlName="conditionsPaiement">
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Notes</mat-label>
+          <textarea matInput formControlName="notes" rows="2" placeholder="Notes additionnelles..."></textarea>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Totaux -->
+    <div class="totaux-section">
+      <div class="total-row">
+        <span>Total HT</span>
+        <span class="amount">{{ calculerTotalHT() | number:'1.3-3' }} TND</span>
+      </div>
+      <div class="total-row">
+        <span>TVA ({{ (factureForm.get('tauxTVA')?.value * 100) | number:'1.0-0' }}%)</span>
+        <span class="amount">{{ calculerTVA() | number:'1.3-3' }} TND</span>
+      </div>
+      <div class="total-row grand-total">
+        <span>Total TTC</span>
+        <span class="amount">{{ calculerTotalTTC() | number:'1.3-3' }} TND</span>
+      </div>
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">
+    <mat-icon>close</mat-icon>
+    Annuler
+  </button>
+  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="!factureForm.valid">
+    <mat-icon>{{ isEditMode ? 'save' : 'add' }}</mat-icon>
+    {{ isEditMode ? 'Mettre à jour' : 'Créer la facture' }}
+  </button>
+</mat-dialog-actions>

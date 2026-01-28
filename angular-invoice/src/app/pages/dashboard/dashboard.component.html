@@ -1,0 +1,67 @@
+<div class="dashboard-container">
+  <!-- Hero Section -->
+  <div class="hero-section">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <mat-icon>verified</mat-icon>
+        <span>Plateforme de gestion professionnelle</span>
+      </div>
+      <h1>Bienvenue sur <span class="brand">DeviSmart</span></h1>
+      <p class="hero-subtitle">Créez, gérez et suivez vos devis et factures en toute simplicité. 
+        Une solution complète pour optimiser votre facturation.</p>
+      <div class="hero-actions">
+        <button mat-raised-button class="btn-primary-hero" routerLink="/devis">
+          <mat-icon>add_circle</mat-icon>
+          Créer un devis
+        </button>
+      </div>
+    </div>
+    <div class="hero-illustration">
+      <div class="floating-card card-1">
+        <mat-icon>description</mat-icon>
+        <span>Devis #2026-001</span>
+        <div class="status">Validé</div>
+      </div>
+      <div class="floating-card card-2">
+        <mat-icon>receipt_long</mat-icon>
+        <span>2,450 TND</span>
+        <div class="status paid">Payée</div>
+      </div>
+      <div class="floating-card card-3">
+        <mat-icon>trending_up</mat-icon>
+        <span>+24%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="section-title">
+    <h2>
+      <mat-icon>bolt</mat-icon>
+      Actions rapides
+    </h2>
+  </div>
+
+  <div class="quick-actions">
+    <div class="action-card" routerLink="/devis">
+      <div class="action-icon devis">
+        <mat-icon>note_add</mat-icon>
+      </div>
+      <div class="action-content">
+        <span class="action-title">Créer un devis</span>
+        <span class="action-desc">Nouveau devis client</span>
+      </div>
+      <mat-icon class="action-arrow">chevron_right</mat-icon>
+    </div>
+    <div class="action-card" routerLink="/factures">
+      <div class="action-icon factures">
+        <mat-icon>receipt</mat-icon>
+      </div>
+      <div class="action-content">
+        <span class="action-title">Voir les factures</span>
+        <span class="action-desc">Suivi des paiements</span>
+      </div>
+      <mat-icon class="action-arrow">chevron_right</mat-icon>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,158 @@
+<div class="page-container">
+  <!-- Header Section -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-text">
+        <h1>
+          <mat-icon class="header-icon">people</mat-icon>
+          Gestion des Clients
+        </h1>
+        <p>Gérez vos clients et leurs informations</p>
+      </div>
+      <button mat-raised-button class="btn-primary" (click)="openForm()">
+        <mat-icon>add</mat-icon>
+        Ajouter Client
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">
+        <mat-icon>people_outline</mat-icon>
+      </div>
+      <div class="stat-content">
+        <span class="stat-number">{{ clients.length }}</span>
+        <span class="stat-label">Total Clients</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Section -->
+  @if (showForm) {
+    <mat-card class="form-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>{{ isEditing ? 'edit' : 'person_add' }}</mat-icon>
+          {{ isEditing ? 'Modifier le Client' : 'Nouveau Client' }}
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="clientForm" (ngSubmit)="saveClient()" class="client-form">
+          <div class="form-grid">
+            <mat-form-field appearance="outline">
+              <mat-label>Nom</mat-label>
+              <input matInput formControlName="nom" placeholder="Nom du client">
+              <mat-icon matPrefix>person</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Email</mat-label>
+              <input matInput formControlName="email" type="email" placeholder="email@exemple.com">
+              <mat-icon matPrefix>email</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Téléphone</mat-label>
+              <input matInput formControlName="telephone" placeholder="+216 XX XXX XXX">
+              <mat-icon matPrefix>phone</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Adresse</mat-label>
+              <input matInput formControlName="adresse" placeholder="Adresse complète">
+              <mat-icon matPrefix>location_on</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Matricule Fiscal</mat-label>
+              <input matInput formControlName="matriculeFiscal" placeholder="Matricule fiscal">
+              <mat-icon matPrefix>badge</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <div class="form-actions">
+            <button mat-button type="button" (click)="closeForm()">Annuler</button>
+            <button mat-raised-button class="btn-primary" type="submit" [disabled]="clientForm.invalid">
+              <mat-icon>{{ isEditing ? 'save' : 'add' }}</mat-icon>
+              {{ isEditing ? 'Enregistrer' : 'Ajouter' }}
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <!-- Table Section -->
+  <mat-card class="table-card">
+    <mat-card-content>
+      @if (clients.length === 0) {
+        <div class="empty-state">
+          <mat-icon>people_outline</mat-icon>
+          <h3>Aucun client</h3>
+          <p>Commencez par ajouter votre premier client</p>
+          <button mat-raised-button class="btn-primary" (click)="openForm()">
+            <mat-icon>add</mat-icon>
+            Ajouter un client
+          </button>
+        </div>
+      } @else {
+        <table mat-table [dataSource]="clients" class="clients-table">
+          <!-- Nom Column -->
+          <ng-container matColumnDef="nom">
+            <th mat-header-cell *matHeaderCellDef>Nom</th>
+            <td mat-cell *matCellDef="let client">
+              <div class="client-name">
+                <div class="avatar">{{ client.nom?.charAt(0) }}</div>
+                {{ client.nom }}
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Email Column -->
+          <ng-container matColumnDef="email">
+            <th mat-header-cell *matHeaderCellDef>Email</th>
+            <td mat-cell *matCellDef="let client">{{ client.email }}</td>
+          </ng-container>
+
+          <!-- Telephone Column -->
+          <ng-container matColumnDef="telephone">
+            <th mat-header-cell *matHeaderCellDef>Téléphone</th>
+            <td mat-cell *matCellDef="let client">{{ client.telephone }}</td>
+          </ng-container>
+
+          <!-- Adresse Column -->
+          <ng-container matColumnDef="adresse">
+            <th mat-header-cell *matHeaderCellDef>Adresse</th>
+            <td mat-cell *matCellDef="let client">{{ client.adresse }}</td>
+          </ng-container>
+
+          <!-- Matricule Fiscal Column -->
+          <ng-container matColumnDef="matriculeFiscal">
+            <th mat-header-cell *matHeaderCellDef>Matricule Fiscal</th>
+            <td mat-cell *matCellDef="let client">
+              <span class="badge">{{ client.matriculeFiscal }}</span>
+            </td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let client">
+              <button mat-icon-button class="action-btn edit" matTooltip="Modifier" (click)="editClient(client)">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button class="action-btn delete" matTooltip="Supprimer" (click)="deleteClient(client.id)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>

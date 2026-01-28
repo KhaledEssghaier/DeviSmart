@@ -1,0 +1,148 @@
+<div class="page-container">
+  <!-- Header Section -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-text">
+        <h1>
+          <mat-icon class="header-icon">receipt_long</mat-icon>
+          Gestion des Factures
+        </h1>
+        <p>Créez et gérez vos factures clients</p>
+      </div>
+      <button mat-raised-button class="btn-primary" (click)="openNewFactureDialog()">
+        Nouvelle Facture
+      </button>
+    </div>
+  </div>
+
+  <!-- Table Section -->
+  <mat-card class="table-card">
+    <mat-card-content>
+      @if (factures.length === 0 && cachedFactures.length === 0) {
+        <div class="empty-state">
+          <mat-icon>receipt_long</mat-icon>
+          <h3>Aucune facture</h3>
+          <p>Créez votre première facture pour commencer</p>
+          <button mat-raised-button color="primary" (click)="openNewFactureDialog()">
+            Créer une facture
+          </button>
+        </div>
+      } @else {
+        <!-- Cached Factures (Local) -->
+        @if (cachedFactures.length > 0) {
+          <div class="cached-section">
+            <h3 class="section-title">
+              <mat-icon>drafts</mat-icon>
+              Factures en brouillon (non sauvegardées)
+            </h3>
+            <div class="cached-list">
+              @for (facture of cachedFactures; track $index) {
+                <div class="cached-item">
+                  <div class="cached-info">
+                    <span class="cached-client">{{ facture.nomClient }}</span>
+                    <span class="cached-amount">{{ facture.totalTTC | number:'1.2-2' }} TND</span>
+                  </div>
+                  <div class="cached-actions">
+                    <button mat-icon-button color="primary" matTooltip="Modifier" (click)="editCachedFacture($index)">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <button mat-icon-button color="primary" matTooltip="Sauvegarder au serveur" (click)="saveCachedToServer($index)">
+                      <mat-icon>cloud_upload</mat-icon>
+                    </button>
+                    <button mat-icon-button matTooltip="Exporter PDF" (click)="exportCachedToPdf($index)">
+                      <mat-icon>picture_as_pdf</mat-icon>
+                    </button>
+                    <button mat-icon-button color="warn" matTooltip="Supprimer" (click)="deleteCachedFacture($index)">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Server Factures -->
+        @if (factures.length > 0) {
+          <h3 class="section-title" *ngIf="cachedFactures.length > 0">
+            <mat-icon>cloud_done</mat-icon>
+            Factures sauvegardées
+          </h3>
+          <table mat-table [dataSource]="factures" class="factures-table">
+            <!-- Numero Column -->
+            <ng-container matColumnDef="numero">
+              <th mat-header-cell *matHeaderCellDef>N° Facture</th>
+              <td mat-cell *matCellDef="let facture">
+                <span class="numero-badge">{{ facture.numeroFacture || facture.numero }}</span>
+              </td>
+            </ng-container>
+
+            <!-- Client Column -->
+            <ng-container matColumnDef="client">
+              <th mat-header-cell *matHeaderCellDef>Client</th>
+              <td mat-cell *matCellDef="let facture">
+                <div class="client-info">
+                  <div class="avatar">{{ (facture.nomClient || facture.client?.nom || '?').charAt(0) }}</div>
+                  <div class="client-details">
+                    <span class="client-name">{{ facture.nomClient || facture.client?.nom }}</span>
+                    <span class="client-email">{{ facture.emailClient || facture.client?.email }}</span>
+                  </div>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Date Emission Column -->
+            <ng-container matColumnDef="dateEmission">
+              <th mat-header-cell *matHeaderCellDef>Date Émission</th>
+              <td mat-cell *matCellDef="let facture">{{ facture.dateEmission | date:'dd/MM/yyyy' }}</td>
+            </ng-container>
+
+            <!-- Statut Column -->
+            <ng-container matColumnDef="statut">
+              <th mat-header-cell *matHeaderCellDef>Statut</th>
+              <td mat-cell *matCellDef="let facture">
+                <span class="status-badge" [ngClass]="getStatutClass(facture.statut)">
+                  <mat-icon>{{ facture.statut === 'PAYÉE' ? 'check_circle' : 'pending' }}</mat-icon>
+                  {{ facture.statut }}
+                </span>
+              </td>
+            </ng-container>
+
+            <!-- Total Column -->
+            <ng-container matColumnDef="total">
+              <th mat-header-cell *matHeaderCellDef>Total TTC</th>
+              <td mat-cell *matCellDef="let facture">
+                <span class="total-amount">{{ facture.totalTTC | number:'1.2-2' }} TND</span>
+              </td>
+            </ng-container>
+
+            <!-- Actions Column -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Actions</th>
+              <td mat-cell *matCellDef="let facture">
+                @if (facture.statut === 'NON PAYÉE' || facture.statut === 'NON_PAYEE') {
+                  <button mat-icon-button class="action-btn success" matTooltip="Marquer payée" (click)="marquerPayee(facture.id)">
+                    <mat-icon>paid</mat-icon>
+                  </button>
+                } @else {
+                  <button mat-icon-button class="action-btn warning" matTooltip="Marquer non payée" (click)="marquerNonPayee(facture.id)">
+                    <mat-icon>money_off</mat-icon>
+                  </button>
+                }
+                <button mat-icon-button class="action-btn print" matTooltip="Télécharger PDF" (click)="downloadPdf(facture)">
+                  <mat-icon>picture_as_pdf</mat-icon>
+                </button>
+                <button mat-icon-button class="action-btn delete" matTooltip="Supprimer" (click)="deleteFacture(facture.id)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          </table>
+        }
+      }
+    </mat-card-content>
+  </mat-card>
+</div>

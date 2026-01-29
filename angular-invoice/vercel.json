@@ -1,6 +1,8 @@
 {
   "version": 2,
-  "buildCommand": "ng build --configuration production",
+  "framework": null,
+  "installCommand": "npm install",
+  "buildCommand": "npm run build:static",
   "outputDirectory": "dist/angular-invoice/browser",
   "rewrites": [
     {

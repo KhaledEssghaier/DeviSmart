@@ -7,7 +7,11 @@ export interface Devis {
   dateCreation: string;
   dateValidite: string;
   statut: 'BROUILLON' | 'VALIDÉ' | 'REFUSÉ';
-  client: Client;
+  client?: Client;
+  clientNom?: string;
+  clientEmail?: string;
+  clientTelephone?: string;
+  clientAdresse?: string;
   lignes: Ligne[];
   tauxTVA?: number;
   totalHT?: number;

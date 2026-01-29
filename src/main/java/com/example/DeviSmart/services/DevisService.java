@@ -58,6 +58,14 @@ public class DevisService {
         }
         // Appliquer le taux de TVA de l'entreprise
         devis.setTauxTVA(entrepriseService.getTauxTVA());
+        
+        // Associate lignes with the devis
+        if (devis.getLignes() != null) {
+            for (Ligne ligne : devis.getLignes()) {
+                ligne.setDevis(devis);
+            }
+        }
+        
         return devisRepository.save(devis);
     }
 
@@ -67,7 +75,24 @@ public class DevisService {
         
         devis.setDateValidite(devisDetails.getDateValidite());
         devis.setStatut(devisDetails.getStatut());
-        devis.setClient(devisDetails.getClient());
+        
+        // Update manual client fields
+        devis.setClientNom(devisDetails.getClientNom());
+        devis.setClientEmail(devisDetails.getClientEmail());
+        devis.setClientTelephone(devisDetails.getClientTelephone());
+        devis.setClientAdresse(devisDetails.getClientAdresse());
+        
+        // Update lignes
+        if (devisDetails.getLignes() != null) {
+            // Remove old lignes
+            devis.getLignes().clear();
+            
+            // Add new lignes
+            for (Ligne ligne : devisDetails.getLignes()) {
+                ligne.setDevis(devis);
+                devis.getLignes().add(ligne);
+            }
+        }
         
         return devisRepository.save(devis);
     }

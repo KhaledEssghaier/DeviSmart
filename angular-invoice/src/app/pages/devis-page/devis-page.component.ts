@@ -15,9 +15,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatChipsModule } from '@angular/material/chips';
 import { DevisService } from '../../services/devis.service';
-import { ClientService } from '../../services/client.service';
 import { Devis } from '../../models/devis.model';
-import { Client } from '../../models/client.model';
 
 @Component({
   selector: 'app-devis-page',
@@ -45,26 +43,26 @@ import { Client } from '../../models/client.model';
 })
 export class DevisPageComponent implements OnInit {
   private devisService = inject(DevisService);
-  private clientService = inject(ClientService);
   private snackBar = inject(MatSnackBar);
   private fb = inject(FormBuilder);
 
   devisList: Devis[] = [];
-  clients: Client[] = [];
   displayedColumns: string[] = ['numero', 'client', 'dateCreation', 'dateValidite', 'statut', 'total', 'actions'];
   showForm = false;
   isEditing = false;
   editingId: number | null = null;
 
   devisForm: FormGroup = this.fb.group({
-    clientId: ['', Validators.required],
+    clientNom: ['', Validators.required],
+    clientEmail: [''],
+    clientTelephone: [''],
+    clientAdresse: [''],
     dateValidite: ['', Validators.required],
     lignes: this.fb.array([])
   });
 
   ngOnInit(): void {
     this.loadDevis();
-    this.loadClients();
   }
 
   get lignes(): FormArray {
@@ -75,13 +73,6 @@ export class DevisPageComponent implements OnInit {
     this.devisService.getDevis().subscribe({
       next: (data) => this.devisList = data,
       error: () => this.showError('Erreur lors du chargement des devis')
-    });
-  }
-
-  loadClients(): void {
-    this.clientService.getClients().subscribe({
-      next: (data) => this.clients = data,
-      error: () => this.showError('Erreur lors du chargement des clients')
     });
   }
 
@@ -120,22 +111,65 @@ export class DevisPageComponent implements OnInit {
     if (this.devisForm.invalid) return;
 
     const formValue = this.devisForm.value;
-    const client = this.clients.find(c => c.id === formValue.clientId);
 
     const devis: any = {
-      client: client,
+      clientNom: formValue.clientNom,
+      clientEmail: formValue.clientEmail,
+      clientTelephone: formValue.clientTelephone,
+      clientAdresse: formValue.clientAdresse,
       dateValidite: this.formatDate(formValue.dateValidite),
       lignes: formValue.lignes
     };
 
-    this.devisService.addDevis(devis).subscribe({
-      next: () => {
-        this.showSuccess('Devis créé avec succès');
-        this.loadDevis();
-        this.closeForm();
-      },
-      error: () => this.showError('Erreur lors de la création du devis')
+    if (this.isEditing && this.editingId) {
+      this.devisService.updateDevis(this.editingId, devis).subscribe({
+        next: () => {
+          this.showSuccess('Devis modifié avec succès');
+          this.loadDevis();
+          this.closeForm();
+        },
+        error: () => this.showError('Erreur lors de la modification du devis')
+      });
+    } else {
+      this.devisService.addDevis(devis).subscribe({
+        next: () => {
+          this.showSuccess('Devis créé avec succès');
+          this.loadDevis();
+          this.closeForm();
+        },
+        error: () => this.showError('Erreur lors de la création du devis')
+      });
+    }
+  }
+
+  editDevis(devis: Devis): void {
+    this.isEditing = true;
+    this.editingId = devis.id!;
+    this.showForm = true;
+    this.lignes.clear();
+
+    // Populate the form with devis data
+    this.devisForm.patchValue({
+      clientNom: devis.clientNom || '',
+      clientEmail: devis.clientEmail || '',
+      clientTelephone: devis.clientTelephone || '',
+      clientAdresse: devis.clientAdresse || '',
+      dateValidite: devis.dateValidite ? new Date(devis.dateValidite) : null
     });
+
+    // Add lignes
+    if (devis.lignes && devis.lignes.length > 0) {
+      devis.lignes.forEach(ligne => {
+        const ligneGroup = this.fb.group({
+          designation: [ligne.designation, Validators.required],
+          quantite: [ligne.quantite, [Validators.required, Validators.min(1)]],
+          prixUnitaire: [ligne.prixUnitaire, [Validators.required, Validators.min(0)]]
+        });
+        this.lignes.push(ligneGroup);
+      });
+    } else {
+      this.addLigne();
+    }
   }
 
   validerDevis(id: number): void {

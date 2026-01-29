@@ -3,6 +3,7 @@ package com.example.DeviSmart.entities;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -19,14 +20,20 @@ public class Devis {
     // Taux de TVA applicable (en pourcentage, ex: 19.0)
     private double tauxTVA = 19.0;
 
+    // Manual client information
+    private String clientNom;
+    private String clientEmail;
+    private String clientTelephone;
+    private String clientAdresse;
+
     @ManyToOne
     @JoinColumn(name = "client_id")
     @JsonIgnoreProperties({"devis", "factures"})
     private Client client;
 
-    @OneToMany(mappedBy = "devis", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "devis", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JsonIgnoreProperties({"devis", "facture"})
-    private List<Ligne> lignes;
+    private List<Ligne> lignes = new ArrayList<>();
 
     // Constructors
     public Devis() {}
@@ -118,5 +125,37 @@ public class Devis {
 
     public void setTauxTVA(double tauxTVA) {
         this.tauxTVA = tauxTVA;
+    }
+
+    public String getClientNom() {
+        return clientNom;
+    }
+
+    public void setClientNom(String clientNom) {
+        this.clientNom = clientNom;
+    }
+
+    public String getClientEmail() {
+        return clientEmail;
+    }
+
+    public void setClientEmail(String clientEmail) {
+        this.clientEmail = clientEmail;
+    }
+
+    public String getClientTelephone() {
+        return clientTelephone;
+    }
+
+    public void setClientTelephone(String clientTelephone) {
+        this.clientTelephone = clientTelephone;
+    }
+
+    public String getClientAdresse() {
+        return clientAdresse;
+    }
+
+    public void setClientAdresse(String clientAdresse) {
+        this.clientAdresse = clientAdresse;
     }
 }
